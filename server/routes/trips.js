@@ -5,11 +5,12 @@ import { asyncHandler } from '../asyncHandler.js'
 
 const router = Router()
 
-function toTrip(row, recipeSelections) {
+function toTrip(row, recipeSelections, extraItems) {
   return {
     id: row.id,
     name: row.name,
     recipeSelections: recipeSelections ?? [],
+    extraItems: extraItems ?? [],
     createdAt: Number(row.created_at),
     updatedAt: Number(row.updated_at),
   }
@@ -21,6 +22,14 @@ async function loadSelections(connection, tripId) {
     [tripId],
   )
   return rows.map((r) => ({ recipeId: r.recipe_id, portions: r.portions }))
+}
+
+async function loadExtraItems(connection, tripId) {
+  const [rows] = await connection.query(
+    'SELECT id, name, amount, unit FROM trip_extra_items WHERE trip_id = ? ORDER BY sort_order ASC',
+    [tripId],
+  )
+  return rows.map((r) => ({ id: r.id, name: r.name, amount: r.amount, unit: r.unit }))
 }
 
 router.get(
@@ -49,7 +58,8 @@ router.get(
     const [rows] = await pool.query('SELECT * FROM trips WHERE id = ?', [req.params.id])
     if (rows.length === 0) return res.status(404).json({ error: 'Resan hittades inte' })
     const selections = await loadSelections(pool, req.params.id)
-    res.json(toTrip(rows[0], selections))
+    const extraItems = await loadExtraItems(pool, req.params.id)
+    res.json(toTrip(rows[0], selections, extraItems))
   }),
 )
 
@@ -66,15 +76,32 @@ router.post(
       now,
     ])
     const [rows] = await pool.query('SELECT * FROM trips WHERE id = ?', [id])
-    res.status(201).json(toTrip(rows[0], []))
+    res.status(201).json(toTrip(rows[0], [], []))
   }),
 )
+
+async function replaceExtraItems(connection, tripId, items) {
+  await connection.query('DELETE FROM trip_extra_items WHERE trip_id = ?', [tripId])
+  if (!items || items.length === 0) return
+  const values = items.map((item, index) => [
+    crypto.randomUUID(),
+    tripId,
+    String(item.name ?? '').trim(),
+    Number(item.amount) || 0,
+    String(item.unit ?? '').trim(),
+    index,
+  ])
+  await connection.query(
+    'INSERT INTO trip_extra_items (id, trip_id, name, amount, unit, sort_order) VALUES ?',
+    [values],
+  )
+}
 
 router.patch(
   '/:id',
   asyncHandler(async (req, res) => {
     const { id } = req.params
-    const { name, recipeSelections } = req.body
+    const { name, recipeSelections, extraItems } = req.body
     const now = Date.now()
     const connection = await pool.getConnection()
     try {
@@ -112,6 +139,11 @@ router.patch(
           )
         }
       }
+
+      if (extraItems !== undefined) {
+        await replaceExtraItems(connection, id, extraItems)
+      }
+
       await connection.commit()
     } catch (err) {
       await connection.rollback()
@@ -122,7 +154,8 @@ router.patch(
 
     const [rows] = await pool.query('SELECT * FROM trips WHERE id = ?', [id])
     const selections = await loadSelections(pool, id)
-    res.json(toTrip(rows[0], selections))
+    const items = await loadExtraItems(pool, id)
+    res.json(toTrip(rows[0], selections, items))
   }),
 )
 

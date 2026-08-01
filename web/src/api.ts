@@ -1,4 +1,4 @@
-import type { Checklist, ChecklistKind, InventoryItem, Location, Recipe, Trip } from './types'
+import type { Checklist, ChecklistKind, InventoryItem, LogEntry, Location, Recipe, Trip } from './types'
 
 export interface TripSummary {
   id: string
@@ -21,6 +21,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers: { 'Content-Type': 'application/json', ...init?.headers },
     credentials: 'same-origin',
   })
+
+  if (res.status === 401) {
+    onUnauthorized?.()
+    throw new ApiError('Ej inloggad')
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    throw new ApiError(body?.error ?? `Fel: ${res.status}`)
+  }
+
+  if (res.status === 204) return undefined as T
+  return res.json() as Promise<T>
+}
+
+async function requestForm<T>(path: string, method: string, formData: FormData): Promise<T> {
+  const res = await fetch(path, { method, body: formData, credentials: 'same-origin' })
 
   if (res.status === 401) {
     onUnauthorized?.()
@@ -76,7 +93,7 @@ export const tripsApi = {
   list: () => request<TripSummary[]>('/api/trips'),
   get: (id: string) => request<Trip>(`/api/trips/${id}`),
   create: (name: string) => request<Trip>('/api/trips', { method: 'POST', body: JSON.stringify({ name }) }),
-  update: (id: string, patch: Partial<Pick<Trip, 'name' | 'recipeSelections'>>) =>
+  update: (id: string, patch: Partial<Pick<Trip, 'name' | 'recipeSelections' | 'extraItems'>>) =>
     request<Trip>(`/api/trips/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   remove: (id: string) => request<void>(`/api/trips/${id}`, { method: 'DELETE' }),
 }
@@ -90,4 +107,34 @@ export const checklistsApi = {
   update: (id: string, patch: Partial<Pick<Checklist, 'name' | 'items'>>) =>
     request<Checklist>(`/api/checklists/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   remove: (id: string) => request<void>(`/api/checklists/${id}`, { method: 'DELETE' }),
+}
+
+// --- Logbook ---
+export interface LogEntryInput {
+  date: string
+  mileage: number | null
+  note: string
+  image?: File | null
+}
+
+function logEntryFormData(data: LogEntryInput): FormData {
+  const form = new FormData()
+  form.set('date', data.date)
+  form.set('mileage', data.mileage === null ? '' : String(data.mileage))
+  form.set('note', data.note)
+  if (data.image) form.set('image', data.image)
+  return form
+}
+
+export const logbookApi = {
+  list: () => request<LogEntry[]>('/api/logbook'),
+  create: (data: LogEntryInput) => requestForm<LogEntry>('/api/logbook', 'POST', logEntryFormData(data)),
+  update: (id: string, data: LogEntryInput) =>
+    requestForm<LogEntry>(`/api/logbook/${id}`, 'PATCH', logEntryFormData(data)),
+  remove: (id: string) => request<void>(`/api/logbook/${id}`, { method: 'DELETE' }),
+}
+
+// --- Public share ---
+export const publicApi = {
+  logbook: (token: string) => request<LogEntry[]>(`/api/public/logbook/${encodeURIComponent(token)}`),
 }

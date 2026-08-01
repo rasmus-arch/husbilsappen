@@ -35,6 +35,7 @@ export interface Trip {
   id: string
   name: string
   recipeSelections: RecipeSelection[]
+  extraItems: Ingredient[]
   createdAt: number
   updatedAt: number
 }
@@ -52,6 +53,16 @@ export interface Checklist {
   kind: ChecklistKind
   name: string
   items: ChecklistItem[]
+  createdAt: number
+  updatedAt: number
+}
+
+export interface LogEntry {
+  id: string
+  date: string
+  mileage: number | null
+  note: string
+  imageUrl: string | null
   createdAt: number
   updatedAt: number
 }

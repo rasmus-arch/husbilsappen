@@ -43,6 +43,17 @@ export function aggregateNeededIngredients(trip: Trip, recipes: Recipe[]): Aggre
     }
   }
 
+  for (const item of trip.extraItems) {
+    if (!item.name.trim()) continue
+    const key = normKey(item.name, item.unit)
+    const existing = totals.get(key)
+    if (existing) {
+      existing.amount += item.amount
+    } else {
+      totals.set(key, { key, name: item.name.trim(), unit: item.unit.trim(), amount: item.amount })
+    }
+  }
+
   return [...totals.values()].sort((a, b) => a.name.localeCompare(b.name, 'sv'))
 }
 

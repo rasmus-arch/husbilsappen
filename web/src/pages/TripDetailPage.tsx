@@ -1,9 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { inventoryApi, recipesApi, tripsApi } from '../api'
 import type { RecipeSelection } from '../types'
 import { computeShoppingPlan } from '../lib/shoppingCalc'
 import { Button, Card, EmptyState, Input, PageHeader } from '../components/ui'
+
+let tempIdCounter = 0
+function tempId() {
+  tempIdCounter += 1
+  return `temp-${tempIdCounter}`
+}
 
 function ShoppingSection({
   title,
@@ -50,10 +57,14 @@ export default function TripDetailPage() {
   }
 
   const updateMutation = useMutation({
-    mutationFn: (patch: Partial<Pick<NonNullable<typeof trip>, 'name' | 'recipeSelections'>>) =>
+    mutationFn: (patch: Partial<Pick<NonNullable<typeof trip>, 'name' | 'recipeSelections' | 'extraItems'>>) =>
       tripsApi.update(tripId!, patch),
     onSuccess: invalidateTrip,
   })
+
+  const [extraName, setExtraName] = useState('')
+  const [extraAmount, setExtraAmount] = useState(1)
+  const [extraUnit, setExtraUnit] = useState('st')
 
   const removeMutation = useMutation({
     mutationFn: () => tripsApi.remove(tripId!),
@@ -83,6 +94,23 @@ export default function TripDetailPage() {
   function removeTrip() {
     if (!confirm(`Ta bort resan "${trip!.name}"?`)) return
     removeMutation.mutate()
+  }
+
+  function addExtraItem() {
+    if (!extraName.trim()) return
+    const next = [
+      ...trip!.extraItems,
+      { id: tempId(), name: extraName.trim(), amount: extraAmount, unit: extraUnit.trim() || 'st' },
+    ]
+    updateMutation.mutate({ extraItems: next })
+    setExtraName('')
+    setExtraAmount(1)
+    setExtraUnit('st')
+  }
+
+  function removeExtraItem(id: string) {
+    const next = trip!.extraItems.filter((i) => i.id !== id)
+    updateMutation.mutate({ extraItems: next })
   }
 
   const plan = computeShoppingPlan(trip, recipes, inventory)
@@ -129,6 +157,45 @@ export default function TripDetailPage() {
                 </Card>
               )
             })}
+          </div>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <h3 className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">Övriga varor (utan recept)</h3>
+        <Card className="mb-2">
+          <div className="flex flex-wrap gap-2">
+            <Input
+              value={extraName}
+              onChange={(e) => setExtraName(e.target.value)}
+              placeholder="Vara, t.ex. Toalettpapper"
+              className="min-w-32 flex-1"
+            />
+            <Input
+              type="number"
+              value={extraAmount}
+              onChange={(e) => setExtraAmount(Number(e.target.value) || 0)}
+              className="w-20"
+            />
+            <Input value={extraUnit} onChange={(e) => setExtraUnit(e.target.value)} placeholder="Enhet" className="w-20" />
+            <Button onClick={addExtraItem} type="button">
+              Lägg till
+            </Button>
+          </div>
+        </Card>
+        {trip.extraItems.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {trip.extraItems.map((item) => (
+              <Card key={item.id} className="flex items-center justify-between gap-2 py-2">
+                <span className="flex-1 text-sm text-slate-900 dark:text-slate-100">{item.name}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">
+                  {item.amount} {item.unit}
+                </span>
+                <Button variant="ghost" onClick={() => removeExtraItem(item.id)}>
+                  ✕
+                </Button>
+              </Card>
+            ))}
           </div>
         )}
       </div>

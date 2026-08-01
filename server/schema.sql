@@ -62,3 +62,23 @@ CREATE TABLE IF NOT EXISTS checklist_items (
   sort_order INT NOT NULL DEFAULT 0,
   CONSTRAINT fk_checklist_items_checklist FOREIGN KEY (checklist_id) REFERENCES checklists(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS trip_extra_items (
+  id VARCHAR(36) PRIMARY KEY,
+  trip_id VARCHAR(36) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  amount DOUBLE NOT NULL DEFAULT 0,
+  unit VARCHAR(50) NOT NULL DEFAULT '',
+  sort_order INT NOT NULL DEFAULT 0,
+  CONSTRAINT fk_extra_items_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS log_entries (
+  id VARCHAR(36) PRIMARY KEY,
+  entry_date DATE NOT NULL,
+  mileage DOUBLE NULL,
+  note TEXT NOT NULL DEFAULT '',
+  image_path VARCHAR(500) NULL,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

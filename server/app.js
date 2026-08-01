@@ -1,15 +1,19 @@
 import 'dotenv/config'
 import express from 'express'
 import cookieParser from 'cookie-parser'
+import multer from 'multer'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { requireAuth } from './auth.js'
 import { seedDefaultsIfEmpty } from './seed.js'
+import { uploadsDir } from './uploadsDir.js'
 import authRoutes from './routes/auth.js'
 import recipeRoutes from './routes/recipes.js'
 import inventoryRoutes from './routes/inventory.js'
 import tripRoutes from './routes/trips.js'
 import checklistRoutes from './routes/checklists.js'
+import logbookRoutes from './routes/logbook.js'
+import publicRoutes from './routes/public.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.join(__dirname, '..', 'dist')
@@ -26,13 +30,23 @@ export function createApp() {
   app.use('/api/inventory', requireAuth, inventoryRoutes)
   app.use('/api/trips', requireAuth, tripRoutes)
   app.use('/api/checklists', requireAuth, checklistRoutes)
+  app.use('/api/logbook', requireAuth, logbookRoutes)
+  app.use('/api/public', publicRoutes)
+
+  // Publikt tillgängligt så att både den inloggade appen och den delade
+  // loggboks-länken kan visa bilder utan inloggning. Filnamnen är slumpade
+  // UUID:n, så de går inte att gissa sig till.
+  app.use('/uploads', express.static(uploadsDir))
 
   app.use(express.static(distDir))
-  app.get(/^(?!\/api\/).*/, (req, res) => {
+  app.get(/^(?!\/api\/|\/uploads\/).*/, (req, res) => {
     res.sendFile(path.join(distDir, 'index.html'))
   })
 
   app.use((err, req, res, _next) => {
+    if (err instanceof multer.MulterError || /bildfiler/.test(err.message ?? '')) {
+      return res.status(400).json({ error: err.message })
+    }
     console.error(err)
     res.status(500).json({ error: 'Internt serverfel' })
   })

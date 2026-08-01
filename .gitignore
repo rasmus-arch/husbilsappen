@@ -21,6 +21,10 @@ dist-ssr
 .env.*
 !.env.example
 
+# Uploaded logbook images live on the server's disk, not in git
+server/uploads/*
+!server/uploads/.gitkeep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

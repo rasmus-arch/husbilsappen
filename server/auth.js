@@ -45,6 +45,15 @@ export function checkPassword(candidate) {
   return crypto.timingSafeEqual(candidateBuf, expectedBuf)
 }
 
+export function checkShareToken(candidate) {
+  const shareToken = process.env.LOGBOOK_SHARE_TOKEN
+  if (!shareToken) return false
+  const candidateBuf = Buffer.from(String(candidate ?? ''))
+  const expectedBuf = Buffer.from(shareToken)
+  if (candidateBuf.length !== expectedBuf.length) return false
+  return crypto.timingSafeEqual(candidateBuf, expectedBuf)
+}
+
 export function setSessionCookie(res, token) {
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
