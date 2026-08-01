@@ -122,22 +122,22 @@ export default function RecipeEditPage() {
                   value={ing.name}
                   onChange={(e) => updateIngredient(ing.id, { name: e.target.value })}
                   placeholder="Vara"
-                  className="flex-1"
+                  className="min-w-0 flex-[2]"
                 />
                 <Input
                   type="number"
                   value={ing.amount}
                   onChange={(e) => updateIngredient(ing.id, { amount: Number(e.target.value) || 0 })}
                   placeholder="Mängd"
-                  className="w-20"
+                  className="min-w-0 flex-1"
                 />
                 <Input
                   value={ing.unit}
                   onChange={(e) => updateIngredient(ing.id, { unit: e.target.value })}
                   placeholder="Enhet"
-                  className="w-20"
+                  className="min-w-0 flex-1"
                 />
-                <Button variant="ghost" type="button" onClick={() => removeIngredient(ing.id)}>
+                <Button variant="ghost" type="button" onClick={() => removeIngredient(ing.id)} className="shrink-0">
                   ✕
                 </Button>
               </div>
