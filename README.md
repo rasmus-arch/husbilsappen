@@ -36,18 +36,21 @@ Appen kräver nätuppkoppling mot servern för att fungera (ingen offline-läge)
 
 ## Driftsättning på eget webbhotell (Node.js + MySQL/phpMyAdmin)
 
+**Viktigt:** `dist/` (den byggda frontenden) är committad i repot med avsikt. Många delade webbhotell har för lite minne för att klara av `npm run build` (Vite/TypeScript kan kräva mer RAM än kontot tillåter, vilket ger `JavaScript heap out of memory`). Bygg därför alltid lokalt (eller be Claude bygga) och committa `dist/` – kör aldrig `npm run build` på själva webbhotellet.
+
 1. **Databas:** Skapa en databas och användare via phpMyAdmin/hotellets kontrollpanel. Importera `server/schema.sql` (t.ex. via phpMyAdmins "Importera"-flik).
 2. **Miljövariabler:** Sätt följande i hotellets Node.js-app-inställningar (samma namn som i `.env.example`):
    - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
    - `APP_PASSWORD` – lösenordet du vill logga in med
    - `SESSION_SECRET` – lång slumpad hemlighet
    - `PORT` – porten hotellet vill att appen lyssnar på (många paneler sätter denna automatiskt)
-3. **Bygg och starta:**
+3. **Hämta koden (inkl. den färdigbyggda `dist/`) och installera enbart produktionsberoenden:**
    ```bash
-   npm install
-   npm run build
+   git pull
+   npm install --omit=dev
    npm start
    ```
-   `npm start` kör `server/index.js`, som både svarar på `/api/*` och serverar den byggda frontenden – en enda Node-process. Om din hotellpanel har ett "Setup Node.js App"-läge, peka startfilen på `server/index.js` och kör `npm run build` som en engångs-/deploy-åtgärd innan appen startas.
+   `npm start` kör `server/index.js`, som både svarar på `/api/*` och serverar den redan byggda frontenden i `dist/` – en enda Node-process. `--omit=dev` hoppar över tunga byggverktyg (Vite, TypeScript, Tailwind) som du inte behöver på servern.
+4. **När koden ändras:** bygg om lokalt (`npm run build`), committa den uppdaterade `dist/`-mappen, och gör `git pull` + starta om appen på servern.
 
 Byt `APP_PASSWORD` när du vill ändra lösenordet – alla som redan är inloggade förblir det tills sessionen (30 dagar) eller cookien rensas.

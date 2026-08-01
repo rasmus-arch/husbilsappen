@@ -8,9 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
 dist-ssr
 *.local
+
+# dist/ (built frontend) IS committed on purpose: the production host has
+# too little memory to run `npm run build` itself, so the build is done
+# here and the output is deployed via `git pull`. Rebuild and commit dist/
+# whenever src/ changes.
 
 # Environment / secrets - never commit real credentials
 .env
