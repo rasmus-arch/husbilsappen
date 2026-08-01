@@ -1,0 +1,98 @@
+import { useEffect } from 'react'
+import { HashRouter, NavLink, Route, Routes } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { authApi, setUnauthorizedHandler } from './api'
+import LoginPage from './pages/LoginPage'
+import RecipesPage from './pages/RecipesPage'
+import RecipeEditPage from './pages/RecipeEditPage'
+import InventoryPage from './pages/InventoryPage'
+import TripsPage from './pages/TripsPage'
+import TripDetailPage from './pages/TripDetailPage'
+import ListsPage from './pages/ListsPage'
+import ListDetailPage from './pages/ListDetailPage'
+import { Button } from './components/ui'
+
+const navItems = [
+  { to: '/', label: 'Resor', end: true },
+  { to: '/recept', label: 'Recept' },
+  { to: '/skafferi', label: 'Skafferi' },
+  { to: '/listor', label: 'Listor' },
+]
+
+function App() {
+  const queryClient = useQueryClient()
+  const meQuery = useQuery({ queryKey: ['me'], queryFn: authApi.me })
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      queryClient.setQueryData(['me'], { authenticated: false })
+    })
+  }, [queryClient])
+
+  const logoutMutation = useMutation({
+    mutationFn: authApi.logout,
+    onSuccess: () => {
+      queryClient.setQueryData(['me'], { authenticated: false })
+      queryClient.clear()
+    },
+  })
+
+  if (meQuery.isLoading) {
+    return (
+      <div className="flex min-h-svh items-center justify-center text-slate-500">
+        Laddar…
+      </div>
+    )
+  }
+
+  if (!meQuery.data?.authenticated) {
+    return <LoginPage />
+  }
+
+  return (
+    <HashRouter>
+      <div className="mx-auto flex min-h-svh max-w-2xl flex-col bg-slate-50 pb-20 dark:bg-slate-950">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
+          <h1 className="text-lg font-semibold text-teal-700 dark:text-teal-400">🚐 Husbilsappen</h1>
+          <Button variant="ghost" onClick={() => logoutMutation.mutate()}>
+            Logga ut
+          </Button>
+        </header>
+
+        <main className="flex-1 px-4 py-4">
+          <Routes>
+            <Route path="/" element={<TripsPage />} />
+            <Route path="/resor/:tripId" element={<TripDetailPage />} />
+            <Route path="/recept" element={<RecipesPage />} />
+            <Route path="/recept/nytt" element={<RecipeEditPage />} />
+            <Route path="/recept/:recipeId" element={<RecipeEditPage />} />
+            <Route path="/skafferi" element={<InventoryPage />} />
+            <Route path="/listor" element={<ListsPage />} />
+            <Route path="/listor/:listId" element={<ListDetailPage />} />
+          </Routes>
+        </main>
+
+        <nav className="fixed inset-x-0 bottom-0 z-10 mx-auto flex max-w-2xl border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-medium ${
+                  isActive
+                    ? 'text-teal-700 dark:text-teal-400'
+                    : 'text-slate-500 dark:text-slate-400'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+    </HashRouter>
+  )
+}
+
+export default App
