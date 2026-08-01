@@ -78,7 +78,7 @@ async function replaceItems(connection, checklistId, items) {
   await connection.query('DELETE FROM checklist_items WHERE checklist_id = ?', [checklistId])
   if (!items || items.length === 0) return
   const values = items.map((item, index) => [
-    item.id && item.id.length > 0 ? item.id : crypto.randomUUID(),
+    item.id && item.id.length > 0 && !item.id.startsWith('temp-') ? item.id : crypto.randomUUID(),
     checklistId,
     String(item.text ?? '').trim(),
     item.checked ? 1 : 0,

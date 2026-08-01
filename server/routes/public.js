@@ -6,11 +6,6 @@ import { asyncHandler } from '../asyncHandler.js'
 
 const router = Router()
 
-// TILLFÄLLIG diagnosroute - tas bort igen efter felsökning av delningslänken.
-router.get('/debug-env', (req, res) => {
-  res.json({ logbookShareToken: JSON.stringify(process.env.LOGBOOK_SHARE_TOKEN) })
-})
-
 function toEntry(row) {
   return {
     id: row.id,
