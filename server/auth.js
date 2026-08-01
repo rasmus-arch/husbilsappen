@@ -35,20 +35,20 @@ export function isValidToken(token) {
 }
 
 export function checkPassword(candidate) {
-  const appPassword = process.env.APP_PASSWORD
+  const appPassword = process.env.APP_PASSWORD?.trim()
   if (!appPassword) {
     throw new Error('APP_PASSWORD saknas. Sätt lösenordet i miljövariablerna.')
   }
-  const candidateBuf = Buffer.from(String(candidate ?? ''))
+  const candidateBuf = Buffer.from(String(candidate ?? '').trim())
   const expectedBuf = Buffer.from(appPassword)
   if (candidateBuf.length !== expectedBuf.length) return false
   return crypto.timingSafeEqual(candidateBuf, expectedBuf)
 }
 
 export function checkShareToken(candidate) {
-  const shareToken = process.env.LOGBOOK_SHARE_TOKEN
+  const shareToken = process.env.LOGBOOK_SHARE_TOKEN?.trim()
   if (!shareToken) return false
-  const candidateBuf = Buffer.from(String(candidate ?? ''))
+  const candidateBuf = Buffer.from(String(candidate ?? '').trim())
   const expectedBuf = Buffer.from(shareToken)
   if (candidateBuf.length !== expectedBuf.length) return false
   return crypto.timingSafeEqual(candidateBuf, expectedBuf)
