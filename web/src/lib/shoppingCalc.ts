@@ -26,7 +26,7 @@ export function aggregateNeededIngredients(trip: Trip, recipes: Recipe[]): Aggre
   const byId = new Map(recipes.map((r) => [r.id, r]))
   const totals = new Map<string, AggregatedIngredient>()
 
-  for (const sel of trip.recipeSelections) {
+  for (const sel of trip.recipeSelections ?? []) {
     const recipe = byId.get(sel.recipeId)
     if (!recipe || sel.portions <= 0) continue
     const scale = recipe.servings > 0 ? sel.portions / recipe.servings : sel.portions
@@ -43,7 +43,7 @@ export function aggregateNeededIngredients(trip: Trip, recipes: Recipe[]): Aggre
     }
   }
 
-  for (const item of trip.extraItems) {
+  for (const item of trip.extraItems ?? []) {
     if (!item.name.trim()) continue
     const key = normKey(item.name, item.unit)
     const existing = totals.get(key)

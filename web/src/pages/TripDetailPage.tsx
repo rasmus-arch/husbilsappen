@@ -76,18 +76,23 @@ export default function TripDetailPage() {
 
   if (!trip || !recipes || !inventory) return <p className="text-slate-500">Laddar…</p>
 
-  const selectionByRecipe = new Map(trip.recipeSelections.map((s) => [s.recipeId, s]))
+  // Skydd mot ett ofullständigt/gammalt svar från API:t (t.ex. under en
+  // pågående deploy) så sidan visar tomma listor istället för att krascha.
+  const recipeSelections = trip.recipeSelections ?? []
+  const extraItems = trip.extraItems ?? []
+
+  const selectionByRecipe = new Map(recipeSelections.map((s) => [s.recipeId, s]))
 
   function toggleRecipe(recipeId: string, servings: number) {
     const exists = selectionByRecipe.has(recipeId)
     const next: RecipeSelection[] = exists
-      ? trip!.recipeSelections.filter((s) => s.recipeId !== recipeId)
-      : [...trip!.recipeSelections, { recipeId, portions: servings }]
+      ? recipeSelections.filter((s) => s.recipeId !== recipeId)
+      : [...recipeSelections, { recipeId, portions: servings }]
     updateMutation.mutate({ recipeSelections: next })
   }
 
   function setPortions(recipeId: string, portions: number) {
-    const next = trip!.recipeSelections.map((s) => (s.recipeId === recipeId ? { ...s, portions } : s))
+    const next = recipeSelections.map((s) => (s.recipeId === recipeId ? { ...s, portions } : s))
     updateMutation.mutate({ recipeSelections: next })
   }
 
@@ -99,7 +104,7 @@ export default function TripDetailPage() {
   function addExtraItem() {
     if (!extraName.trim()) return
     const next = [
-      ...trip!.extraItems,
+      ...extraItems,
       { id: tempId(), name: extraName.trim(), amount: extraAmount, unit: extraUnit.trim() || 'st' },
     ]
     updateMutation.mutate({ extraItems: next })
@@ -109,7 +114,7 @@ export default function TripDetailPage() {
   }
 
   function removeExtraItem(id: string) {
-    const next = trip!.extraItems.filter((i) => i.id !== id)
+    const next = extraItems.filter((i) => i.id !== id)
     updateMutation.mutate({ extraItems: next })
   }
 
@@ -183,9 +188,9 @@ export default function TripDetailPage() {
             </Button>
           </div>
         </Card>
-        {trip.extraItems.length > 0 && (
+        {extraItems.length > 0 && (
           <div className="flex flex-col gap-2">
-            {trip.extraItems.map((item) => (
+            {extraItems.map((item) => (
               <Card key={item.id} className="flex items-center justify-between gap-2 py-2">
                 <span className="flex-1 text-sm text-slate-900 dark:text-slate-100">{item.name}</span>
                 <span className="text-sm text-slate-500 dark:text-slate-400">
