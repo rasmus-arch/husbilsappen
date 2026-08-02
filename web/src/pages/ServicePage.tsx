@@ -17,7 +17,7 @@ function ServiceForm({
   submitLabel,
   pending,
 }: {
-  initial?: ServiceEntryInput
+  initial?: { date: string; title: string; mileage: number | null; cost: number | null; notes: string }
   onSubmit: (data: ServiceEntryInput) => void
   onCancel: () => void
   submitLabel: string
@@ -28,6 +28,7 @@ function ServiceForm({
   const [mileage, setMileage] = useState(initial?.mileage != null ? String(initial.mileage) : '')
   const [cost, setCost] = useState(initial?.cost != null ? String(initial.cost) : '')
   const [notes, setNotes] = useState(initial?.notes ?? '')
+  const [receipt, setReceipt] = useState<File | null>(null)
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -38,6 +39,7 @@ function ServiceForm({
       mileage: mileage === '' ? null : Number(mileage),
       cost: cost === '' ? null : Number(cost),
       notes,
+      receipt,
     })
   }
 
@@ -48,9 +50,9 @@ function ServiceForm({
           <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Datum</span>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
         </label>
-        <label className="flex w-28 flex-col gap-1">
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Miltal</span>
-          <Input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="mil" />
+        <label className="flex w-32 flex-col gap-1">
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Mätarställning</span>
+          <Input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="km" />
         </label>
       </div>
       <label className="flex flex-col gap-1">
@@ -60,6 +62,15 @@ function ServiceForm({
       <label className="flex flex-col gap-1">
         <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Kostnad (kr)</span>
         <Input type="number" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="valfritt" />
+      </label>
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Kvitto/foto</span>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+          onChange={(e) => setReceipt(e.target.files?.[0] ?? null)}
+          className="text-sm text-slate-600 dark:text-slate-400"
+        />
       </label>
       <label className="flex flex-col gap-1">
         <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Anteckningar</span>
@@ -149,10 +160,20 @@ export default function ServicePage() {
                   <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(entry.date)}</span>
                 </div>
                 <div className="mb-1 flex gap-3 text-xs text-slate-500 dark:text-slate-400">
-                  {entry.mileage !== null && <span>{entry.mileage} mil</span>}
+                  {entry.mileage !== null && <span>{entry.mileage} km</span>}
                   {entry.cost !== null && <span>{entry.cost} kr</span>}
                 </div>
                 {entry.notes && <p className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100">{entry.notes}</p>}
+                {entry.receiptUrl && (
+                  <a
+                    href={entry.receiptUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 inline-block text-sm text-teal-700 dark:text-teal-400"
+                  >
+                    📎 Visa kvitto
+                  </a>
+                )}
                 <div className="mt-3 flex gap-2">
                   <Button variant="secondary" onClick={() => setEditingId(entry.id)}>
                     Redigera

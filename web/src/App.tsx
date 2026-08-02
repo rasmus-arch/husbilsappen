@@ -20,6 +20,9 @@ import FuelPage from './pages/FuelPage'
 import PlacesPage from './pages/PlacesPage'
 import ContactsPage from './pages/ContactsPage'
 import StatsPage from './pages/StatsPage'
+import LevelPage from './pages/LevelPage'
+import ManualsPage from './pages/ManualsPage'
+import SosPage from './pages/SosPage'
 import { Button } from './components/ui'
 
 const navItems = [
@@ -88,6 +91,9 @@ function AuthenticatedApp() {
           <Route path="/mer/platser" element={<PlacesPage />} />
           <Route path="/mer/nodkontakter" element={<ContactsPage />} />
           <Route path="/mer/statistik" element={<StatsPage />} />
+          <Route path="/mer/vattenpass" element={<LevelPage />} />
+          <Route path="/mer/instruktionsbok" element={<ManualsPage />} />
+          <Route path="/mer/sos" element={<SosPage />} />
         </Routes>
       </main>
 

@@ -33,13 +33,13 @@ export default function LogEntryForm({ initial, onSubmit, onCancel, submitLabel,
           <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Datum</span>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
         </label>
-        <label className="flex w-28 flex-col gap-1">
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Miltal</span>
+        <label className="flex w-32 flex-col gap-1">
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Mätarställning</span>
           <Input
             type="number"
             value={mileage}
             onChange={(e) => setMileage(e.target.value)}
-            placeholder="mil"
+            placeholder="km"
           />
         </label>
       </div>

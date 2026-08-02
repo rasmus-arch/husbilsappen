@@ -79,3 +79,40 @@ export async function seedDefaultsIfEmpty() {
     connection.release()
   }
 }
+
+// Lägger till en enskild standardchecklista om ingen med samma namn redan
+// finns - till skillnad från seedDefaultsIfEmpty körs denna alltid, så att
+// nya mallar (tillagda i en senare uppdatering av appen) dyker upp även för
+// installationer som redan har checklistor sedan tidigare.
+export async function ensureDefaultChecklist(kind, name, itemTexts) {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    const [rows] = await connection.query('SELECT id FROM checklists WHERE name = ? FOR UPDATE', [name])
+    if (rows.length > 0) {
+      await connection.commit()
+      return
+    }
+    const checklist = makeChecklist(kind, name, itemTexts)
+    await connection.query('INSERT INTO checklists (id, kind, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [
+      checklist.id,
+      checklist.kind,
+      checklist.name,
+      checklist.now,
+      checklist.now,
+    ])
+    if (checklist.items.length > 0) {
+      const values = checklist.items.map((item, index) => [item.id, checklist.id, item.text, 0, index])
+      await connection.query(
+        'INSERT INTO checklist_items (id, checklist_id, text, checked, sort_order) VALUES ?',
+        [values],
+      )
+    }
+    await connection.commit()
+  } catch (err) {
+    await connection.rollback()
+    throw err
+  } finally {
+    connection.release()
+  }
+}

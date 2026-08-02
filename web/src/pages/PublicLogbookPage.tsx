@@ -35,7 +35,7 @@ export default function PublicLogbookPage() {
             )}
             <div className="mb-1 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
               <span>{formatDate(entry.date)}</span>
-              {entry.mileage !== null && <span>{entry.mileage} mil</span>}
+              {entry.mileage !== null && <span>{entry.mileage} km</span>}
             </div>
             {entry.note && (
               <p className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100">{entry.note}</p>

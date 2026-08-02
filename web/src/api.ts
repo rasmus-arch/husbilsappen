@@ -6,6 +6,7 @@ import type {
   InventoryItem,
   LogEntry,
   Location,
+  Manual,
   Place,
   Recipe,
   ServiceEntry,
@@ -164,13 +165,31 @@ export const vehicleApi = {
 }
 
 // --- Service log ---
-export type ServiceEntryInput = Pick<ServiceEntry, 'date' | 'title' | 'mileage' | 'cost' | 'notes'>
+export interface ServiceEntryInput {
+  date: string
+  title: string
+  mileage: number | null
+  cost: number | null
+  notes: string
+  receipt?: File | null
+}
+
+function serviceEntryFormData(data: ServiceEntryInput): FormData {
+  const form = new FormData()
+  form.set('date', data.date)
+  form.set('title', data.title)
+  form.set('mileage', data.mileage === null ? '' : String(data.mileage))
+  form.set('cost', data.cost === null ? '' : String(data.cost))
+  form.set('notes', data.notes)
+  if (data.receipt) form.set('receipt', data.receipt)
+  return form
+}
 
 export const serviceApi = {
   list: () => request<ServiceEntry[]>('/api/service'),
-  create: (data: ServiceEntryInput) => request<ServiceEntry>('/api/service', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: Partial<ServiceEntryInput>) =>
-    request<ServiceEntry>(`/api/service/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  create: (data: ServiceEntryInput) => requestForm<ServiceEntry>('/api/service', 'POST', serviceEntryFormData(data)),
+  update: (id: string, data: ServiceEntryInput) =>
+    requestForm<ServiceEntry>(`/api/service/${id}`, 'PATCH', serviceEntryFormData(data)),
   remove: (id: string) => request<void>(`/api/service/${id}`, { method: 'DELETE' }),
 }
 
@@ -211,4 +230,34 @@ export const fuelApi = {
 // --- Statistik ---
 export const statsApi = {
   get: () => request<Stats>('/api/stats'),
+}
+
+// --- Digital instruktionsbok (manualer/dokument) ---
+export interface ManualInput {
+  title: string
+  category: string
+  notes: string
+  file?: File | null
+}
+
+function manualFormData(data: ManualInput): FormData {
+  const form = new FormData()
+  form.set('title', data.title)
+  form.set('category', data.category)
+  form.set('notes', data.notes)
+  if (data.file) form.set('file', data.file)
+  return form
+}
+
+export const manualsApi = {
+  list: () => request<Manual[]>('/api/manuals'),
+  create: (data: ManualInput) => requestForm<Manual>('/api/manuals', 'POST', manualFormData(data)),
+  update: (id: string, data: ManualInput) => requestForm<Manual>(`/api/manuals/${id}`, 'PATCH', manualFormData(data)),
+  remove: (id: string) => request<void>(`/api/manuals/${id}`, { method: 'DELETE' }),
+}
+
+// --- Geokodning (för SOS-sidan) ---
+export const geocodeApi = {
+  reverse: (lat: number, lon: number) =>
+    request<{ address: string | null }>(`/api/geocode?lat=${lat}&lon=${lon}`),
 }

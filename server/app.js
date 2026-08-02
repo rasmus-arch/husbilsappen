@@ -5,7 +5,7 @@ import multer from 'multer'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { requireAuth } from './auth.js'
-import { seedDefaultsIfEmpty } from './seed.js'
+import { ensureDefaultChecklist, seedDefaultsIfEmpty } from './seed.js'
 import { uploadsDir } from './uploadsDir.js'
 import authRoutes from './routes/auth.js'
 import recipeRoutes from './routes/recipes.js'
@@ -20,6 +20,8 @@ import placeRoutes from './routes/places.js'
 import emergencyContactRoutes from './routes/emergencyContacts.js'
 import fuelRoutes from './routes/fuel.js'
 import statsRoutes from './routes/stats.js'
+import manualRoutes from './routes/manuals.js'
+import geocodeRoutes from './routes/geocode.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.join(__dirname, '..', 'dist')
@@ -43,6 +45,8 @@ export function createApp() {
   app.use('/api/emergency-contacts', requireAuth, emergencyContactRoutes)
   app.use('/api/fuel', requireAuth, fuelRoutes)
   app.use('/api/stats', requireAuth, statsRoutes)
+  app.use('/api/manuals', requireAuth, manualRoutes)
+  app.use('/api/geocode', requireAuth, geocodeRoutes)
   app.use('/api/public', publicRoutes)
 
   // Publikt tillgängligt så att både den inloggade appen och den delade
@@ -68,6 +72,16 @@ export function createApp() {
 
 export async function start() {
   await seedDefaultsIfEmpty()
+  await ensureDefaultChecklist('rutin', 'Husdjur inför resa', [
+    'Vaccinationsintyg/pass med',
+    'Koppel & sele',
+    'Foder & vattenskål',
+    'Filt/bädd',
+    'Leksaker',
+    'Eventuella mediciner',
+    'Bilbälte/bur säkrat under färd',
+    'ID-bricka på halsband',
+  ])
   const app = createApp()
   const port = Number(process.env.PORT || 3000)
   app.listen(port, () => {

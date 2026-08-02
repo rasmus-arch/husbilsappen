@@ -138,3 +138,19 @@ CREATE TABLE IF NOT EXISTS fuel_entries (
   created_at BIGINT NOT NULL,
   updated_at BIGINT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS manuals (
+  id VARCHAR(36) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  category VARCHAR(100) NOT NULL DEFAULT '',
+  file_path VARCHAR(500) NOT NULL,
+  file_type VARCHAR(100) NOT NULL,
+  notes TEXT NOT NULL DEFAULT '',
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Kvitto-/inköpsfoto för en servicepost (tillagt i en senare uppdatering).
+-- ADD COLUMN IF NOT EXISTS gör det säkert att köra om schema.sql på en
+-- databas som redan har service_entries-tabellen sedan tidigare.
+ALTER TABLE service_entries ADD COLUMN IF NOT EXISTS receipt_path VARCHAR(500) NULL;

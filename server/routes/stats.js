@@ -22,18 +22,18 @@ router.get(
        LIMIT 1`,
     )
 
-    let avgConsumptionPer10Mil = null
+    let avgConsumptionPer100Km = null
     if (fuelRows.length >= 2) {
       const totalLiters = fuelRows.slice(1).reduce((sum, r) => sum + r.liters, 0)
       const distance = fuelRows[fuelRows.length - 1].mileage - fuelRows[0].mileage
-      if (distance > 0) avgConsumptionPer10Mil = (totalLiters / distance) * 10
+      if (distance > 0) avgConsumptionPer100Km = (totalLiters / distance) * 100
     }
 
     res.json({
       tripCount: tripCountRow.cnt,
       logEntryCount: logCountRow.cnt,
       totalMileage: mileageRow.max != null && mileageRow.min != null ? mileageRow.max - mileageRow.min : null,
-      avgConsumptionPer10Mil,
+      avgConsumptionPer100Km,
       mostUsedRecipe: topRecipeRow ? { name: topRecipeRow.name, count: topRecipeRow.cnt } : null,
     })
   }),

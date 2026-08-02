@@ -87,6 +87,18 @@ export interface ServiceEntry {
   mileage: number | null
   cost: number | null
   notes: string
+  receiptUrl: string | null
+  createdAt: number
+  updatedAt: number
+}
+
+export interface Manual {
+  id: string
+  title: string
+  category: string
+  fileUrl: string
+  fileType: string
+  notes: string
   createdAt: number
   updatedAt: number
 }
@@ -125,6 +137,6 @@ export interface Stats {
   tripCount: number
   logEntryCount: number
   totalMileage: number | null
-  avgConsumptionPer10Mil: number | null
+  avgConsumptionPer100Km: number | null
   mostUsedRecipe: { name: string; count: number } | null
 }

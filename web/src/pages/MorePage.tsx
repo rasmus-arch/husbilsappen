@@ -2,9 +2,12 @@ import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/ui'
 
 const items = [
+  { to: '/mer/sos', icon: '🆘', label: 'Nödläge' },
   { to: '/mer/loggbok', icon: '📓', label: 'Loggbok' },
   { to: '/mer/galleri', icon: '🖼️', label: 'Bildgalleri' },
   { to: '/mer/husbilsdata', icon: '🚐', label: 'Husbilsdata' },
+  { to: '/mer/vattenpass', icon: '📐', label: 'Vattenpass' },
+  { to: '/mer/instruktionsbok', icon: '📚', label: 'Instruktionsbok' },
   { to: '/mer/servicelogg', icon: '🔧', label: 'Servicelogg' },
   { to: '/mer/bransle', icon: '⛽', label: 'Bränslelogg' },
   { to: '/mer/platser', icon: '📍', label: 'Platser' },

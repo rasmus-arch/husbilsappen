@@ -24,11 +24,11 @@ export default function StatsPage() {
       <div className="grid grid-cols-2 gap-2">
         <StatCard icon="🧭" label="Resor" value={String(stats.tripCount)} />
         <StatCard icon="📓" label="Loggboksinlägg" value={String(stats.logEntryCount)} />
-        <StatCard icon="🛣️" label="Körda mil (loggade)" value={stats.totalMileage !== null ? String(stats.totalMileage) : '–'} />
+        <StatCard icon="🛣️" label="Körda km (loggade)" value={stats.totalMileage !== null ? String(stats.totalMileage) : '–'} />
         <StatCard
           icon="⛽"
-          label="Snittförbrukning (l/10 mil)"
-          value={stats.avgConsumptionPer10Mil !== null ? String(Math.round(stats.avgConsumptionPer10Mil * 10) / 10) : '–'}
+          label="Snittförbrukning (l/100 km)"
+          value={stats.avgConsumptionPer100Km !== null ? String(Math.round(stats.avgConsumptionPer100Km * 10) / 10) : '–'}
         />
       </div>
 

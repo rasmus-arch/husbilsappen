@@ -41,9 +41,9 @@ function FuelForm({
           <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Datum</span>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
         </label>
-        <label className="flex w-28 flex-col gap-1">
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Miltal</span>
-          <Input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="mil" required />
+        <label className="flex w-32 flex-col gap-1">
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Mätarställning</span>
+          <Input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="km" required />
         </label>
       </div>
       <div className="flex gap-2">
@@ -100,12 +100,12 @@ export default function FuelPage() {
     onSuccess: invalidate,
   })
 
-  let avgPer10Mil: number | null = null
+  let avgPer100Km: number | null = null
   if (entries && entries.length >= 2) {
     const sorted = [...entries].sort((a, b) => a.mileage - b.mileage)
     const totalLiters = sorted.slice(1).reduce((sum, e) => sum + e.liters, 0)
     const distance = sorted[sorted.length - 1].mileage - sorted[0].mileage
-    if (distance > 0) avgPer10Mil = Math.round(((totalLiters / distance) * 10) * 10) / 10
+    if (distance > 0) avgPer100Km = Math.round((totalLiters / distance) * 100 * 10) / 10
   }
 
   return (
@@ -113,9 +113,9 @@ export default function FuelPage() {
       <BackLink />
       <PageHeader title="Bränslelogg" action={!showForm && <Button onClick={() => setShowForm(true)}>+ Ny tankning</Button>} />
 
-      {avgPer10Mil !== null && (
+      {avgPer100Km !== null && (
         <Card className="mb-4 text-center">
-          <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">{avgPer10Mil} l/10 mil</span>
+          <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">{avgPer100Km} l/100 km</span>
           <p className="text-xs text-slate-500 dark:text-slate-400">Snittförbrukning</p>
         </Card>
       )}
@@ -148,7 +148,7 @@ export default function FuelPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-slate-900 dark:text-slate-100">
-                    {entry.liters} liter · {entry.mileage} mil
+                    {entry.liters} liter · {entry.mileage} km
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">
                     {formatDate(entry.date)}
