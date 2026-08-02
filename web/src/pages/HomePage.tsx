@@ -9,7 +9,7 @@ const shortcuts = [
   { to: '/mer/vattenpass', icon: '📐', label: 'Vattenpass' },
   { to: '/mer/sos', icon: '🆘', label: 'Nödläge' },
   { to: '/mer/loggbok', icon: '📓', label: 'Loggbok' },
-  { to: '/mer/faq', icon: '❓', label: 'Bra att veta' },
+  { to: '/mer/instruktionsbok', icon: '📚', label: 'Instruktionsbok' },
   { to: '/skafferi', icon: '🧺', label: 'Skafferi' },
 ]
 

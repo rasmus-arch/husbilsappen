@@ -116,30 +116,3 @@ export async function ensureDefaultChecklist(kind, name, itemTexts) {
     connection.release()
   }
 }
-
-// Lägger till ett FAQ-kort om ingen med samma fråga redan finns - körs alltid
-// (precis som ensureDefaultChecklist) så nya kort som läggs till i en senare
-// uppdatering dyker upp även för installationer som redan har egna kort.
-export async function ensureFaqCard(question, answer, source) {
-  const connection = await pool.getConnection()
-  try {
-    await connection.beginTransaction()
-    const [rows] = await connection.query('SELECT id FROM faq_cards WHERE question = ? FOR UPDATE', [question])
-    if (rows.length > 0) {
-      await connection.commit()
-      return
-    }
-    const id = crypto.randomUUID()
-    const now = Date.now()
-    await connection.query(
-      'INSERT INTO faq_cards (id, question, answer, source, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, question, answer, source, now, now],
-    )
-    await connection.commit()
-  } catch (err) {
-    await connection.rollback()
-    throw err
-  } finally {
-    connection.release()
-  }
-}

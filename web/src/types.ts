@@ -134,15 +134,6 @@ export interface FuelEntry {
   updatedAt: number
 }
 
-export interface FaqCard {
-  id: string
-  question: string
-  answer: string
-  source: string
-  createdAt: number
-  updatedAt: number
-}
-
 export interface Stats {
   tripCount: number
   logEntryCount: number
