@@ -70,7 +70,7 @@ export default function TripDetailPage() {
     mutationFn: () => tripsApi.remove(tripId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trips'] })
-      navigate('/')
+      navigate('/resor')
     },
   })
 

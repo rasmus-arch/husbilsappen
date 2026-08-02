@@ -3,6 +3,7 @@ import { HashRouter, NavLink, Route, Routes } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { authApi, setUnauthorizedHandler } from './api'
 import LoginPage from './pages/LoginPage'
+import HomePage from './pages/HomePage'
 import RecipesPage from './pages/RecipesPage'
 import RecipeEditPage from './pages/RecipeEditPage'
 import InventoryPage from './pages/InventoryPage'
@@ -27,7 +28,8 @@ import FaqPage from './pages/FaqPage'
 import { Button } from './components/ui'
 
 const navItems = [
-  { to: '/', label: 'Resor', end: true },
+  { to: '/', label: 'Hem', end: true },
+  { to: '/resor', label: 'Resor' },
   { to: '/recept', label: 'Recept' },
   { to: '/skafferi', label: 'Skafferi' },
   { to: '/listor', label: 'Listor' },
@@ -75,7 +77,8 @@ function AuthenticatedApp() {
 
       <main className="flex-1 px-4 py-4">
         <Routes>
-          <Route path="/" element={<TripsPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/resor" element={<TripsPage />} />
           <Route path="/resor/:tripId" element={<TripDetailPage />} />
           <Route path="/recept" element={<RecipesPage />} />
           <Route path="/recept/nytt" element={<RecipeEditPage />} />
