@@ -23,6 +23,7 @@ import StatsPage from './pages/StatsPage'
 import LevelPage from './pages/LevelPage'
 import ManualsPage from './pages/ManualsPage'
 import SosPage from './pages/SosPage'
+import FaqPage from './pages/FaqPage'
 import { Button } from './components/ui'
 
 const navItems = [
@@ -93,6 +94,7 @@ function AuthenticatedApp() {
           <Route path="/mer/statistik" element={<StatsPage />} />
           <Route path="/mer/vattenpass" element={<LevelPage />} />
           <Route path="/mer/instruktionsbok" element={<ManualsPage />} />
+          <Route path="/mer/faq" element={<FaqPage />} />
           <Route path="/mer/sos" element={<SosPage />} />
         </Routes>
       </main>

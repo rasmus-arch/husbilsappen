@@ -157,3 +157,13 @@ ALTER TABLE service_entries ADD COLUMN IF NOT EXISTS receipt_path VARCHAR(500) N
 
 -- Axelavstånd, används av Vattenpasset för att räkna ut nivåklossar fram/bak.
 ALTER TABLE vehicle_data ADD COLUMN IF NOT EXISTS wheelbase_m DOUBLE NULL;
+
+-- FAQ-kort med utdrag/sammanfattningar ur instruktionsböcker och manualer.
+CREATE TABLE IF NOT EXISTS faq_cards (
+  id VARCHAR(36) PRIMARY KEY,
+  question VARCHAR(500) NOT NULL,
+  answer TEXT NOT NULL DEFAULT '',
+  source VARCHAR(255) NOT NULL DEFAULT '',
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

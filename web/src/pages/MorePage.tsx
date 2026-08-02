@@ -8,6 +8,7 @@ const items = [
   { to: '/mer/husbilsdata', icon: '🚐', label: 'Husbilsdata' },
   { to: '/mer/vattenpass', icon: '📐', label: 'Vattenpass' },
   { to: '/mer/instruktionsbok', icon: '📚', label: 'Instruktionsbok' },
+  { to: '/mer/faq', icon: '❓', label: 'Bra att veta' },
   { to: '/mer/servicelogg', icon: '🔧', label: 'Servicelogg' },
   { to: '/mer/bransle', icon: '⛽', label: 'Bränslelogg' },
   { to: '/mer/platser', icon: '📍', label: 'Platser' },

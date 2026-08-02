@@ -2,6 +2,7 @@ import type {
   Checklist,
   ChecklistKind,
   EmergencyContact,
+  FaqCard,
   FuelEntry,
   InventoryItem,
   LogEntry,
@@ -254,6 +255,17 @@ export const manualsApi = {
   create: (data: ManualInput) => requestForm<Manual>('/api/manuals', 'POST', manualFormData(data)),
   update: (id: string, data: ManualInput) => requestForm<Manual>(`/api/manuals/${id}`, 'PATCH', manualFormData(data)),
   remove: (id: string) => request<void>(`/api/manuals/${id}`, { method: 'DELETE' }),
+}
+
+// --- FAQ (utdrag ur manualer) ---
+export type FaqCardInput = Pick<FaqCard, 'question' | 'answer' | 'source'>
+
+export const faqApi = {
+  list: () => request<FaqCard[]>('/api/faq'),
+  create: (data: FaqCardInput) => request<FaqCard>('/api/faq', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<FaqCardInput>) =>
+    request<FaqCard>(`/api/faq/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: (id: string) => request<void>(`/api/faq/${id}`, { method: 'DELETE' }),
 }
 
 // --- Geokodning (för SOS-sidan) ---
