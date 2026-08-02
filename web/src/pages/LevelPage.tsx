@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { vehicleApi } from '../api'
+import { bestBlockCombo, neededHeightCm } from '../lib/levelBlocks'
 import { BackLink, Button, Card, PageHeader } from '../components/ui'
 
 type PermissionState = 'unknown' | 'not-needed' | 'granted' | 'denied' | 'unsupported'
@@ -6,7 +9,51 @@ type PermissionState = 'unknown' | 'not-needed' | 'granted' | 'denied' | 'unsupp
 const TOLERANCE_DEG = 1.5
 const MAX_DEG = 20
 
+function BlockRecommendation({
+  tiltDeg,
+  spanM,
+  spanFieldLabel,
+  lowSideLabel,
+  highSideLabel,
+}: {
+  tiltDeg: number | null
+  spanM: number | null
+  spanFieldLabel: string
+  lowSideLabel: string
+  highSideLabel: string
+}) {
+  if (tiltDeg === null) return null
+
+  if (spanM === null) {
+    return (
+      <p className="text-xs text-slate-500 dark:text-slate-400">
+        Fyll i {spanFieldLabel} under Husbilsdata för att få ett klossförslag här.
+      </p>
+    )
+  }
+
+  if (Math.abs(tiltDeg) < TOLERANCE_DEG) {
+    return <p className="text-sm text-teal-700 dark:text-teal-400">✅ Redan plant</p>
+  }
+
+  const needed = neededHeightCm(spanM, tiltDeg)
+  const combo = bestBlockCombo(needed)
+  const side = tiltDeg > 0 ? lowSideLabel : highSideLabel
+
+  return (
+    <p className="text-sm text-slate-900 dark:text-slate-100">
+      Höj <span className="font-semibold">{side}</span> ca {needed.toFixed(1)} cm:{' '}
+      {combo.heights.length > 0 ? (
+        <span className="font-semibold">{combo.heights.join(' + ')} cm-kloss ({combo.totalCm} cm)</span>
+      ) : (
+        'ingen kloss räcker till, kör vidare till en jämnare plats'
+      )}
+    </p>
+  )
+}
+
 export default function LevelPage() {
+  const { data: vehicle } = useQuery({ queryKey: ['vehicle'], queryFn: vehicleApi.get })
   const [permission, setPermission] = useState<PermissionState>('unknown')
   const [beta, setBeta] = useState<number | null>(null)
   const [gamma, setGamma] = useState<number | null>(null)
@@ -93,7 +140,7 @@ export default function LevelPage() {
       {permission === 'unknown' && (
         <Card className="text-center">
           <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
-            Lägg mobilen plant (skärmen upp) på ett bord eller golv i husbilen.
+            Lägg mobilen plant (skärmen upp) på ett bord eller golv i husbilen, med toppen av mobilen mot fronten på husbilen.
           </p>
           <Button onClick={requestIosPermission}>Aktivera vattenpass</Button>
         </Card>
@@ -108,6 +155,8 @@ export default function LevelPage() {
           >
             <div className="absolute h-px w-full bg-slate-200 dark:bg-slate-800" />
             <div className="absolute h-full w-px bg-slate-200 dark:bg-slate-800" />
+            <span className="absolute top-1 text-xs text-slate-400">Fram</span>
+            <span className="absolute bottom-1 text-xs text-slate-400">Bak</span>
             <div
               className={`absolute h-10 w-10 rounded-full transition-colors ${
                 isLevel ? 'bg-teal-600' : 'bg-amber-500'
@@ -126,11 +175,34 @@ export default function LevelPage() {
             {isLevel && <p className="mt-1 text-sm font-medium text-teal-700 dark:text-teal-400">✅ Plant</p>}
           </Card>
 
+          {!isLevel && (
+            <Card className="w-full">
+              <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">Klossförslag</p>
+              <div className="flex flex-col gap-2">
+                <BlockRecommendation
+                  tiltDeg={adjGamma}
+                  spanM={vehicle?.widthM ?? null}
+                  spanFieldLabel="bredd"
+                  lowSideLabel="höger sida"
+                  highSideLabel="vänster sida"
+                />
+                <BlockRecommendation
+                  tiltDeg={adjBeta}
+                  spanM={vehicle?.wheelbaseM ?? null}
+                  spanFieldLabel="axelavstånd"
+                  lowSideLabel="bakaxeln"
+                  highSideLabel="framaxeln"
+                />
+              </div>
+            </Card>
+          )}
+
           <Button variant="secondary" onClick={calibrate}>
             Nollställ här (kalibrera)
           </Button>
           <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-            Lägg mobilen på ett känt plant underlag och tryck "Nollställ" om den visar fel även när det är plant.
+            Lägg mobilen på ett känt plant underlag och tryck "Nollställ" om den visar fel även när det är plant. Kontrollera
+            håll (vänster/höger, fram/bak) mot ögonmått första gången du använder klossförslaget.
           </p>
         </div>
       )}

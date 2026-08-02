@@ -16,6 +16,7 @@ function toVehicle(row) {
       registrationNumber: '',
       waterTankL: null,
       wasteWaterTankL: null,
+      wheelbaseM: null,
       notes: '',
       updatedAt: null,
     }
@@ -29,6 +30,7 @@ function toVehicle(row) {
     registrationNumber: row.registration_number ?? '',
     waterTankL: row.water_tank_l,
     wasteWaterTankL: row.waste_water_tank_l,
+    wheelbaseM: row.wheelbase_m,
     notes: row.notes ?? '',
     updatedAt: Number(row.updated_at),
   }
@@ -51,18 +53,29 @@ function numOrNull(value) {
 router.put(
   '/',
   asyncHandler(async (req, res) => {
-    const { lengthM, widthM, heightM, totalWeightKg, curbWeightKg, registrationNumber, waterTankL, wasteWaterTankL, notes } =
-      req.body
+    const {
+      lengthM,
+      widthM,
+      heightM,
+      totalWeightKg,
+      curbWeightKg,
+      registrationNumber,
+      waterTankL,
+      wasteWaterTankL,
+      wheelbaseM,
+      notes,
+    } = req.body
     const now = Date.now()
     await pool.query(
       `INSERT INTO vehicle_data
-        (id, length_m, width_m, height_m, total_weight_kg, curb_weight_kg, registration_number, water_tank_l, waste_water_tank_l, notes, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, length_m, width_m, height_m, total_weight_kg, curb_weight_kg, registration_number, water_tank_l, waste_water_tank_l, wheelbase_m, notes, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
         length_m = VALUES(length_m), width_m = VALUES(width_m), height_m = VALUES(height_m),
         total_weight_kg = VALUES(total_weight_kg), curb_weight_kg = VALUES(curb_weight_kg),
         registration_number = VALUES(registration_number), water_tank_l = VALUES(water_tank_l),
-        waste_water_tank_l = VALUES(waste_water_tank_l), notes = VALUES(notes), updated_at = VALUES(updated_at)`,
+        waste_water_tank_l = VALUES(waste_water_tank_l), wheelbase_m = VALUES(wheelbase_m),
+        notes = VALUES(notes), updated_at = VALUES(updated_at)`,
       [
         SINGLETON_ID,
         numOrNull(lengthM),
@@ -73,6 +86,7 @@ router.put(
         String(registrationNumber ?? '').trim() || null,
         numOrNull(waterTankL),
         numOrNull(wasteWaterTankL),
+        numOrNull(wheelbaseM),
         String(notes ?? ''),
         now,
       ],

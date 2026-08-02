@@ -76,6 +76,7 @@ export interface VehicleData {
   registrationNumber: string
   waterTankL: number | null
   wasteWaterTankL: number | null
+  wheelbaseM: number | null
   notes: string
   updatedAt: number | null
 }

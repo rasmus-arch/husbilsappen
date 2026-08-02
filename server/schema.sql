@@ -154,3 +154,6 @@ CREATE TABLE IF NOT EXISTS manuals (
 -- ADD COLUMN IF NOT EXISTS gör det säkert att köra om schema.sql på en
 -- databas som redan har service_entries-tabellen sedan tidigare.
 ALTER TABLE service_entries ADD COLUMN IF NOT EXISTS receipt_path VARCHAR(500) NULL;
+
+-- Axelavstånd, används av Vattenpasset för att räkna ut nivåklossar fram/bak.
+ALTER TABLE vehicle_data ADD COLUMN IF NOT EXISTS wheelbase_m DOUBLE NULL;

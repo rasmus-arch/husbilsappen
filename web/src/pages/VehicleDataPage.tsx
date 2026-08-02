@@ -88,6 +88,7 @@ export default function VehicleDataPage() {
           </label>
           {numField('waterTankL', 'Vattentank (liter)')}
           {numField('wasteWaterTankL', 'Gråvattentank (liter)')}
+          {numField('wheelbaseM', 'Axelavstånd (m)', 'för vattenpassets klossförslag fram/bak')}
           <label className="flex flex-col gap-1">
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Övrigt</span>
             <textarea
@@ -128,6 +129,7 @@ export default function VehicleDataPage() {
           <ListRow label="Registreringsnummer" value={vehicle.registrationNumber} />
           <ListRow label="Vattentank" value={vehicle.waterTankL !== null ? `${vehicle.waterTankL} liter` : ''} />
           <ListRow label="Gråvattentank" value={vehicle.wasteWaterTankL !== null ? `${vehicle.wasteWaterTankL} liter` : ''} />
+          <ListRow label="Axelavstånd" value={vehicle.wheelbaseM !== null ? `${vehicle.wheelbaseM} m` : ''} />
         </ul>
       </Card>
 
