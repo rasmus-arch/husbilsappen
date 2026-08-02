@@ -105,12 +105,27 @@ export function computeShoppingPlan(trip: Trip, recipes: Recipe[], inventory: In
 }
 
 export function findUnassignedInventory(inventory: InventoryItem[], recipes: Recipe[]): InventoryItem[] {
-  const usedKeys = new Set<string>()
+  const neededByKey = new Map<string, number>()
   for (const recipe of recipes) {
     for (const ing of recipe.ingredients) {
       if (!ing.name.trim()) continue
-      usedKeys.add(normKey(ing.name, ing.unit))
+      const key = normKey(ing.name, ing.unit)
+      neededByKey.set(key, (neededByKey.get(key) ?? 0) + ing.amount)
     }
   }
-  return inventory.filter((item) => !usedKeys.has(normKey(item.name, item.unit)))
+
+  const round = (n: number) => Math.round(n * 100) / 100
+  const remainingNeeded = new Map(neededByKey)
+  const unassigned: InventoryItem[] = []
+  for (const item of inventory) {
+    const key = normKey(item.name, item.unit)
+    const needed = remainingNeeded.get(key) ?? 0
+    const used = Math.min(item.amount, needed)
+    const leftover = item.amount - used
+    remainingNeeded.set(key, needed - used)
+    if (leftover > 0) {
+      unassigned.push({ ...item, amount: round(leftover) })
+    }
+  }
+  return unassigned
 }

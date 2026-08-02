@@ -33,10 +33,10 @@ function UnassignedTab() {
   return (
     <div>
       <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
-        Varor du har hemma eller i husbilen som inte ingår i något recept ännu.
+        Den mängd du har hemma eller i husbilen som är mer än vad dina recept behöver.
       </p>
       {unassigned.length === 0 ? (
-        <EmptyState>Alla varor hör till minst ett recept.</EmptyState>
+        <EmptyState>Allt du har täcks av dina recepts behov.</EmptyState>
       ) : (
         <Card>
           <ul className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
