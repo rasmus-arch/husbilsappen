@@ -1,54 +1,84 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { vehicleApi } from '../api'
-import { bestBlockCombo, neededHeightCm } from '../lib/levelBlocks'
-import { BackLink, Button, Card, PageHeader } from '../components/ui'
+import { bestBlockLevel, wheelLifts } from '../lib/levelBlocks'
+import type { BlockLevel, WheelLifts } from '../lib/levelBlocks'
+import { BackLink, Card, Button, PageHeader } from '../components/ui'
 
 type PermissionState = 'unknown' | 'not-needed' | 'granted' | 'denied' | 'unsupported'
 
 const TOLERANCE_DEG = 1.5
 const MAX_DEG = 20
 
-function BlockRecommendation({
-  tiltDeg,
-  spanM,
-  spanFieldLabel,
-  lowSideLabel,
-  highSideLabel,
-}: {
-  tiltDeg: number | null
-  spanM: number | null
-  spanFieldLabel: string
-  lowSideLabel: string
-  highSideLabel: string
-}) {
-  if (tiltDeg === null) return null
+function levelLabel(level: BlockLevel): string {
+  if (level.count === 0) return 'Plant'
+  return `${level.totalCm} cm (${level.count} kloss${level.count > 1 ? 'ar' : ''})`
+}
 
-  if (spanM === null) {
-    return (
-      <p className="text-xs text-slate-500 dark:text-slate-400">
-        Fyll i {spanFieldLabel} under Husbilsdata för att få ett klossförslag här.
-      </p>
-    )
-  }
+function WheelDiagram({ lifts }: { lifts: WheelLifts }) {
+  const fl = bestBlockLevel(lifts.fl)
+  const fr = bestBlockLevel(lifts.fr)
+  const rl = bestBlockLevel(lifts.rl)
+  const rr = bestBlockLevel(lifts.rr)
 
-  if (Math.abs(tiltDeg) < TOLERANCE_DEG) {
-    return <p className="text-sm text-teal-700 dark:text-teal-400">✅ Redan plant</p>
-  }
-
-  const needed = neededHeightCm(spanM, tiltDeg)
-  const combo = bestBlockCombo(needed)
-  const side = tiltDeg > 0 ? lowSideLabel : highSideLabel
+  const wheelFill = (count: number) => (count === 0 ? 'fill-teal-600' : 'fill-amber-500')
+  const wheelText = (level: BlockLevel) => (level.count === 0 ? '–' : `${level.totalCm} cm`)
 
   return (
-    <p className="text-sm text-slate-900 dark:text-slate-100">
-      Höj <span className="font-semibold">{side}</span> ca {needed.toFixed(1)} cm:{' '}
-      {combo.heights.length > 0 ? (
-        <span className="font-semibold">{combo.heights.join(' + ')} cm-kloss ({combo.totalCm} cm)</span>
-      ) : (
-        'ingen kloss räcker till, kör vidare till en jämnare plats'
-      )}
-    </p>
+    <div className="flex flex-col items-center gap-3">
+      <svg viewBox="0 0 280 320" className="h-72 w-56">
+        <text x="140" y="12" textAnchor="middle" className="fill-slate-400 text-[11px]">
+          Fram
+        </text>
+        <rect
+          x="80"
+          y="20"
+          width="120"
+          height="280"
+          rx="24"
+          className="fill-slate-100 stroke-slate-300 dark:fill-slate-800 dark:stroke-slate-600"
+          strokeWidth="2"
+        />
+        <rect x="58" y="50" width="20" height="46" rx="6" className={wheelFill(fl.count)} />
+        <rect x="202" y="50" width="20" height="46" rx="6" className={wheelFill(fr.count)} />
+        <rect x="58" y="224" width="20" height="46" rx="6" className={wheelFill(rl.count)} />
+        <rect x="202" y="224" width="20" height="46" rx="6" className={wheelFill(rr.count)} />
+        <text x="50" y="76" textAnchor="end" className="fill-slate-700 text-[13px] font-medium dark:fill-slate-300">
+          {wheelText(fl)}
+        </text>
+        <text x="230" y="76" textAnchor="start" className="fill-slate-700 text-[13px] font-medium dark:fill-slate-300">
+          {wheelText(fr)}
+        </text>
+        <text x="50" y="250" textAnchor="end" className="fill-slate-700 text-[13px] font-medium dark:fill-slate-300">
+          {wheelText(rl)}
+        </text>
+        <text x="230" y="250" textAnchor="start" className="fill-slate-700 text-[13px] font-medium dark:fill-slate-300">
+          {wheelText(rr)}
+        </text>
+        <text x="140" y="312" textAnchor="middle" className="fill-slate-400 text-[11px]">
+          Bak
+        </text>
+      </svg>
+
+      <ul className="w-full divide-y divide-slate-100 text-sm dark:divide-slate-800">
+        <li className="flex justify-between py-1.5">
+          <span className="text-slate-500 dark:text-slate-400">Fram vänster</span>
+          <span className="text-slate-900 dark:text-slate-100">{levelLabel(fl)}</span>
+        </li>
+        <li className="flex justify-between py-1.5">
+          <span className="text-slate-500 dark:text-slate-400">Fram höger</span>
+          <span className="text-slate-900 dark:text-slate-100">{levelLabel(fr)}</span>
+        </li>
+        <li className="flex justify-between py-1.5">
+          <span className="text-slate-500 dark:text-slate-400">Bak vänster</span>
+          <span className="text-slate-900 dark:text-slate-100">{levelLabel(rl)}</span>
+        </li>
+        <li className="flex justify-between py-1.5">
+          <span className="text-slate-500 dark:text-slate-400">Bak höger</span>
+          <span className="text-slate-900 dark:text-slate-100">{levelLabel(rr)}</span>
+        </li>
+      </ul>
+    </div>
   )
 }
 
@@ -175,25 +205,17 @@ export default function LevelPage() {
             {isLevel && <p className="mt-1 text-sm font-medium text-teal-700 dark:text-teal-400">✅ Plant</p>}
           </Card>
 
-          {!isLevel && (
+          {!isLevel && adjGamma !== null && adjBeta !== null && (
             <Card className="w-full">
-              <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">Klossförslag</p>
-              <div className="flex flex-col gap-2">
-                <BlockRecommendation
-                  tiltDeg={adjGamma}
-                  spanM={vehicle?.widthM ?? null}
-                  spanFieldLabel="bredd"
-                  lowSideLabel="höger sida"
-                  highSideLabel="vänster sida"
-                />
-                <BlockRecommendation
-                  tiltDeg={adjBeta}
-                  spanM={vehicle?.wheelbaseM ?? null}
-                  spanFieldLabel="axelavstånd"
-                  lowSideLabel="bakaxeln"
-                  highSideLabel="framaxeln"
-                />
-              </div>
+              <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">Klossförslag per hjul</p>
+              {vehicle?.widthM == null || vehicle?.wheelbaseM == null ? (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Fyll i {[vehicle?.widthM == null && 'bredd', vehicle?.wheelbaseM == null && 'axelavstånd'].filter(Boolean).join(' och ')}{' '}
+                  under Husbilsdata för att få klossförslag per hjul.
+                </p>
+              ) : (
+                <WheelDiagram lifts={wheelLifts(adjGamma, adjBeta, vehicle.widthM, vehicle.wheelbaseM)} />
+              )}
             </Card>
           )}
 
