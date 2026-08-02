@@ -14,7 +14,7 @@ export interface ShoppingPlan {
   toBuy: AggregatedIngredient[]
 }
 
-function normKey(name: string, unit: string): string {
+export function normKey(name: string, unit: string): string {
   return `${name.trim().toLowerCase()}|${unit.trim().toLowerCase()}`
 }
 
@@ -102,4 +102,15 @@ export function computeShoppingPlan(trip: Trip, recipes: Recipe[], inventory: In
   }
 
   return { needed, fromHusbil, fromHome, toBuy }
+}
+
+export function findUnassignedInventory(inventory: InventoryItem[], recipes: Recipe[]): InventoryItem[] {
+  const usedKeys = new Set<string>()
+  for (const recipe of recipes) {
+    for (const ing of recipe.ingredients) {
+      if (!ing.name.trim()) continue
+      usedKeys.add(normKey(ing.name, ing.unit))
+    }
+  }
+  return inventory.filter((item) => !usedKeys.has(normKey(item.name, item.unit)))
 }

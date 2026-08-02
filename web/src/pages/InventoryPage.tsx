@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { inventoryApi } from '../api'
+import { inventoryApi, recipesApi } from '../api'
 import type { Location } from '../types'
+import { findUnassignedInventory } from '../lib/shoppingCalc'
 import { Button, Card, EmptyState, Input, PageHeader } from '../components/ui'
 
-function LocationTab({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+type Tab = Location | 'unassigned'
+
+function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
   return (
     <button
       onClick={onClick}
@@ -19,16 +22,57 @@ function LocationTab({ active, onClick, label }: { active: boolean; onClick: () 
   )
 }
 
+function UnassignedTab() {
+  const { data: inventory } = useQuery({ queryKey: ['inventory', 'alla'], queryFn: () => inventoryApi.list() })
+  const { data: recipes } = useQuery({ queryKey: ['recipes'], queryFn: recipesApi.list })
+
+  if (!inventory || !recipes) return <p className="text-slate-500">Laddar…</p>
+
+  const unassigned = findUnassignedInventory(inventory, recipes)
+
+  return (
+    <div>
+      <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+        Varor du har hemma eller i husbilen som inte ingår i något recept ännu.
+      </p>
+      {unassigned.length === 0 ? (
+        <EmptyState>Alla varor hör till minst ett recept.</EmptyState>
+      ) : (
+        <Card>
+          <ul className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
+            {unassigned.map((item) => (
+              <li key={item.id} className="flex items-center justify-between py-1.5 text-sm">
+                <span className="text-slate-900 dark:text-slate-100">{item.name}</span>
+                <span className="flex items-center gap-2">
+                  <span className="text-slate-500 dark:text-slate-400">
+                    {item.amount} {item.unit}
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    {item.location === 'hemma' ? 'Hemma' : 'Husbil'}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+    </div>
+  )
+}
+
 export default function InventoryPage() {
-  const [location, setLocation] = useState<Location>('hemma')
+  const [tab, setTab] = useState<Tab>('hemma')
   const [name, setName] = useState('')
   const [amount, setAmount] = useState(1)
   const [unit, setUnit] = useState('st')
   const queryClient = useQueryClient()
 
+  const location = tab === 'unassigned' ? undefined : tab
+
   const { data: items } = useQuery({
-    queryKey: ['inventory', location],
+    queryKey: ['inventory', tab],
     queryFn: () => inventoryApi.list(location),
+    enabled: tab !== 'unassigned',
   })
 
   function invalidate() {
@@ -36,7 +80,7 @@ export default function InventoryPage() {
   }
 
   const addMutation = useMutation({
-    mutationFn: () => inventoryApi.create({ location, name: name.trim(), amount, unit: unit.trim() || 'st' }),
+    mutationFn: () => inventoryApi.create({ location: location!, name: name.trim(), amount, unit: unit.trim() || 'st' }),
     onSuccess: () => {
       invalidate()
       setName('')
@@ -65,45 +109,54 @@ export default function InventoryPage() {
       <PageHeader title="Skafferi" />
 
       <div className="mb-4 flex gap-2">
-        <LocationTab active={location === 'hemma'} onClick={() => setLocation('hemma')} label="Hemma" />
-        <LocationTab active={location === 'husbil'} onClick={() => setLocation('husbil')} label="Husbil" />
+        <TabButton active={tab === 'hemma'} onClick={() => setTab('hemma')} label="Hemma" />
+        <TabButton active={tab === 'husbil'} onClick={() => setTab('husbil')} label="Husbil" />
+        <TabButton active={tab === 'unassigned'} onClick={() => setTab('unassigned')} label="Ej i recept" />
       </div>
 
-      <Card className="mb-4">
-        <div className="flex flex-wrap gap-2">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Vara" className="min-w-32 flex-1" />
-          <Input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value) || 0)}
-            className="w-20"
-          />
-          <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Enhet" className="w-20" />
-          <Button onClick={addItem} type="button" disabled={addMutation.isPending}>
-            Lägg till
-          </Button>
-        </div>
-      </Card>
-
-      {items && items.length === 0 && <EmptyState>Inga varor registrerade {location === 'hemma' ? 'hemma' : 'i husbilen'} ännu.</EmptyState>}
-
-      <div className="flex flex-col gap-2">
-        {items?.map((item) => (
-          <Card key={item.id} className="flex items-center justify-between gap-2 py-2">
-            <span className="flex-1 text-sm text-slate-900 dark:text-slate-100">{item.name}</span>
-            <Input
-              type="number"
-              defaultValue={item.amount}
-              onBlur={(e) => updateMutation.mutate({ id: item.id, amount: Number(e.target.value) || 0 })}
-              className="w-20"
-            />
-            <span className="w-12 text-sm text-slate-500 dark:text-slate-400">{item.unit}</span>
-            <Button variant="ghost" onClick={() => removeMutation.mutate(item.id)}>
-              ✕
-            </Button>
+      {tab === 'unassigned' ? (
+        <UnassignedTab />
+      ) : (
+        <>
+          <Card className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Vara" className="min-w-32 flex-1" />
+              <Input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value) || 0)}
+                className="w-20"
+              />
+              <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Enhet" className="w-20" />
+              <Button onClick={addItem} type="button" disabled={addMutation.isPending}>
+                Lägg till
+              </Button>
+            </div>
           </Card>
-        ))}
-      </div>
+
+          {items && items.length === 0 && (
+            <EmptyState>Inga varor registrerade {tab === 'hemma' ? 'hemma' : 'i husbilen'} ännu.</EmptyState>
+          )}
+
+          <div className="flex flex-col gap-2">
+            {items?.map((item) => (
+              <Card key={item.id} className="flex items-center justify-between gap-2 py-2">
+                <span className="flex-1 text-sm text-slate-900 dark:text-slate-100">{item.name}</span>
+                <Input
+                  type="number"
+                  defaultValue={item.amount}
+                  onBlur={(e) => updateMutation.mutate({ id: item.id, amount: Number(e.target.value) || 0 })}
+                  className="w-20"
+                />
+                <span className="w-12 text-sm text-slate-500 dark:text-slate-400">{item.unit}</span>
+                <Button variant="ghost" onClick={() => removeMutation.mutate(item.id)}>
+                  ✕
+                </Button>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
