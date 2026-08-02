@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { logbookApi } from '../api'
 import type { LogEntryInput } from '../api'
-import { Button, Card, EmptyState, PageHeader } from '../components/ui'
+import { BackLink, Button, Card, EmptyState, PageHeader } from '../components/ui'
 import LogEntryForm from '../components/LogEntryForm'
 import { formatDate } from '../lib/date'
 
@@ -44,6 +44,7 @@ export default function LogbookPage() {
 
   return (
     <div>
+      <BackLink />
       <PageHeader
         title="Loggbok"
         action={!showForm && <Button onClick={() => setShowForm(true)}>+ Nytt inlägg</Button>}

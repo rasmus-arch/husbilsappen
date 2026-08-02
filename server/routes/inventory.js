@@ -84,4 +84,71 @@ router.delete(
   }),
 )
 
+// Flyttar (upp till) angiven mängd av varje vara mellan två platser, t.ex. för
+// "Packa upp resan"-knappen som flyttar tillbaka det som togs till husbilen.
+router.post(
+  '/move',
+  asyncHandler(async (req, res) => {
+    const { items, from, to } = req.body
+    if (from !== 'hemma' && from !== 'husbil') return res.status(400).json({ error: 'Ogiltig avsändarplats' })
+    if (to !== 'hemma' && to !== 'husbil') return res.status(400).json({ error: 'Ogiltig mottagarplats' })
+    if (!Array.isArray(items)) return res.status(400).json({ error: 'items krävs' })
+
+    const connection = await pool.getConnection()
+    try {
+      await connection.beginTransaction()
+      const now = Date.now()
+      for (const item of items) {
+        const name = String(item.name ?? '').trim()
+        const unit = String(item.unit ?? '').trim()
+        const wantAmount = Number(item.amount) || 0
+        if (!name || wantAmount <= 0) continue
+
+        const [fromRows] = await connection.query(
+          'SELECT id, amount FROM inventory_items WHERE location = ? AND LOWER(name) = LOWER(?) AND LOWER(unit) = LOWER(?) LIMIT 1',
+          [from, name, unit],
+        )
+        if (fromRows.length === 0) continue
+        const movedAmount = Math.min(wantAmount, fromRows[0].amount)
+        if (movedAmount <= 0) continue
+        const remaining = fromRows[0].amount - movedAmount
+
+        if (remaining > 0) {
+          await connection.query('UPDATE inventory_items SET amount = ?, updated_at = ? WHERE id = ?', [
+            remaining,
+            now,
+            fromRows[0].id,
+          ])
+        } else {
+          await connection.query('DELETE FROM inventory_items WHERE id = ?', [fromRows[0].id])
+        }
+
+        const [toRows] = await connection.query(
+          'SELECT id, amount FROM inventory_items WHERE location = ? AND LOWER(name) = LOWER(?) AND LOWER(unit) = LOWER(?) LIMIT 1',
+          [to, name, unit],
+        )
+        if (toRows.length > 0) {
+          await connection.query('UPDATE inventory_items SET amount = amount + ?, updated_at = ? WHERE id = ?', [
+            movedAmount,
+            now,
+            toRows[0].id,
+          ])
+        } else {
+          await connection.query(
+            'INSERT INTO inventory_items (id, location, name, amount, unit, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+            [crypto.randomUUID(), to, name, movedAmount, unit, now],
+          )
+        }
+      }
+      await connection.commit()
+    } catch (err) {
+      await connection.rollback()
+      throw err
+    } finally {
+      connection.release()
+    }
+    res.status(204).end()
+  }),
+)
+
 export default router

@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
@@ -41,6 +42,14 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
 
 export function EmptyState({ children }: { children: ReactNode }) {
   return <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">{children}</p>
+}
+
+export function BackLink({ to = '/mer', label = 'Mer' }: { to?: string; label?: string }) {
+  return (
+    <Link to={to} className="mb-2 inline-block text-sm text-teal-700 dark:text-teal-400">
+      ← {label}
+    </Link>
+  )
 }
 
 export function PageHeader({ title, action }: { title: string; action?: ReactNode }) {

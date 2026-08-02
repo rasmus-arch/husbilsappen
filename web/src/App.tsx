@@ -12,6 +12,14 @@ import ListsPage from './pages/ListsPage'
 import ListDetailPage from './pages/ListDetailPage'
 import LogbookPage from './pages/LogbookPage'
 import PublicLogbookPage from './pages/PublicLogbookPage'
+import MorePage from './pages/MorePage'
+import GalleryPage from './pages/GalleryPage'
+import VehicleDataPage from './pages/VehicleDataPage'
+import ServicePage from './pages/ServicePage'
+import FuelPage from './pages/FuelPage'
+import PlacesPage from './pages/PlacesPage'
+import ContactsPage from './pages/ContactsPage'
+import StatsPage from './pages/StatsPage'
 import { Button } from './components/ui'
 
 const navItems = [
@@ -19,7 +27,7 @@ const navItems = [
   { to: '/recept', label: 'Recept' },
   { to: '/skafferi', label: 'Skafferi' },
   { to: '/listor', label: 'Listor' },
-  { to: '/loggbok', label: 'Logg' },
+  { to: '/mer', label: 'Mer' },
 ]
 
 function AuthenticatedApp() {
@@ -71,7 +79,15 @@ function AuthenticatedApp() {
           <Route path="/skafferi" element={<InventoryPage />} />
           <Route path="/listor" element={<ListsPage />} />
           <Route path="/listor/:listId" element={<ListDetailPage />} />
-          <Route path="/loggbok" element={<LogbookPage />} />
+          <Route path="/mer" element={<MorePage />} />
+          <Route path="/mer/loggbok" element={<LogbookPage />} />
+          <Route path="/mer/galleri" element={<GalleryPage />} />
+          <Route path="/mer/husbilsdata" element={<VehicleDataPage />} />
+          <Route path="/mer/servicelogg" element={<ServicePage />} />
+          <Route path="/mer/bransle" element={<FuelPage />} />
+          <Route path="/mer/platser" element={<PlacesPage />} />
+          <Route path="/mer/nodkontakter" element={<ContactsPage />} />
+          <Route path="/mer/statistik" element={<StatsPage />} />
         </Routes>
       </main>
 

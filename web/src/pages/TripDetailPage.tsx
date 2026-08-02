@@ -74,6 +74,12 @@ export default function TripDetailPage() {
     },
   })
 
+  const unpackMutation = useMutation({
+    mutationFn: (items: { name: string; unit: string; amount: number }[]) =>
+      inventoryApi.move(items, 'husbil', 'hemma'),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['inventory'] }),
+  })
+
   if (!trip || !recipes || !inventory) return <p className="text-slate-500">Laddar…</p>
 
   // Skydd mot ett ofullständigt/gammalt svar från API:t (t.ex. under en
@@ -217,6 +223,25 @@ export default function TripDetailPage() {
           </>
         )}
       </div>
+
+      {plan.fromHome.length > 0 && (
+        <div className="mb-6">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              if (!confirm('Flyttar det som packades till husbilen för resan tillbaka till hemma-skafferiet. Fortsätt?')) return
+              unpackMutation.mutate(plan.fromHome.map((i) => ({ name: i.name, unit: i.unit, amount: i.amount })))
+            }}
+            disabled={unpackMutation.isPending}
+          >
+            📦 Packa upp resan
+          </Button>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Flyttar tillbaka det som togs till husbilen för resan till hemma-skafferiet.
+          </p>
+          {unpackMutation.isSuccess && <p className="mt-1 text-xs text-teal-700 dark:text-teal-400">Klart!</p>}
+        </div>
+      )}
 
       <Button variant="danger" onClick={removeTrip}>
         Ta bort resa

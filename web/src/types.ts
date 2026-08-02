@@ -66,3 +66,65 @@ export interface LogEntry {
   createdAt: number
   updatedAt: number
 }
+
+export interface VehicleData {
+  lengthM: number | null
+  widthM: number | null
+  heightM: number | null
+  totalWeightKg: number | null
+  curbWeightKg: number | null
+  registrationNumber: string
+  waterTankL: number | null
+  wasteWaterTankL: number | null
+  notes: string
+  updatedAt: number | null
+}
+
+export interface ServiceEntry {
+  id: string
+  date: string
+  title: string
+  mileage: number | null
+  cost: number | null
+  notes: string
+  createdAt: number
+  updatedAt: number
+}
+
+export interface Place {
+  id: string
+  name: string
+  description: string
+  rating: number | null
+  notes: string
+  createdAt: number
+  updatedAt: number
+}
+
+export interface EmergencyContact {
+  id: string
+  name: string
+  phone: string
+  category: string
+  notes: string
+  createdAt: number
+  updatedAt: number
+}
+
+export interface FuelEntry {
+  id: string
+  date: string
+  mileage: number
+  liters: number
+  cost: number | null
+  createdAt: number
+  updatedAt: number
+}
+
+export interface Stats {
+  tripCount: number
+  logEntryCount: number
+  totalMileage: number | null
+  avgConsumptionPer10Mil: number | null
+  mostUsedRecipe: { name: string; count: number } | null
+}

@@ -14,6 +14,12 @@ import tripRoutes from './routes/trips.js'
 import checklistRoutes from './routes/checklists.js'
 import logbookRoutes from './routes/logbook.js'
 import publicRoutes from './routes/public.js'
+import vehicleRoutes from './routes/vehicle.js'
+import serviceRoutes from './routes/service.js'
+import placeRoutes from './routes/places.js'
+import emergencyContactRoutes from './routes/emergencyContacts.js'
+import fuelRoutes from './routes/fuel.js'
+import statsRoutes from './routes/stats.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.join(__dirname, '..', 'dist')
@@ -31,6 +37,12 @@ export function createApp() {
   app.use('/api/trips', requireAuth, tripRoutes)
   app.use('/api/checklists', requireAuth, checklistRoutes)
   app.use('/api/logbook', requireAuth, logbookRoutes)
+  app.use('/api/vehicle', requireAuth, vehicleRoutes)
+  app.use('/api/service', requireAuth, serviceRoutes)
+  app.use('/api/places', requireAuth, placeRoutes)
+  app.use('/api/emergency-contacts', requireAuth, emergencyContactRoutes)
+  app.use('/api/fuel', requireAuth, fuelRoutes)
+  app.use('/api/stats', requireAuth, statsRoutes)
   app.use('/api/public', publicRoutes)
 
   // Publikt tillgängligt så att både den inloggade appen och den delade

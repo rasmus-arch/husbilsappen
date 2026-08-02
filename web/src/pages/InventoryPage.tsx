@@ -143,6 +143,7 @@ export default function InventoryPage() {
               <Card key={item.id} className="flex items-center justify-between gap-2 py-2">
                 <span className="flex-1 text-sm text-slate-900 dark:text-slate-100">{item.name}</span>
                 <Input
+                  key={item.updatedAt}
                   type="number"
                   defaultValue={item.amount}
                   onBlur={(e) => updateMutation.mutate({ id: item.id, amount: Number(e.target.value) || 0 })}

@@ -82,3 +82,59 @@ CREATE TABLE IF NOT EXISTS log_entries (
   created_at BIGINT NOT NULL,
   updated_at BIGINT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Enda raden har alltid id='singleton' - husbilen är ju bara en.
+CREATE TABLE IF NOT EXISTS vehicle_data (
+  id VARCHAR(36) PRIMARY KEY,
+  length_m DOUBLE NULL,
+  width_m DOUBLE NULL,
+  height_m DOUBLE NULL,
+  total_weight_kg DOUBLE NULL,
+  curb_weight_kg DOUBLE NULL,
+  registration_number VARCHAR(50) NULL,
+  water_tank_l DOUBLE NULL,
+  waste_water_tank_l DOUBLE NULL,
+  notes TEXT NOT NULL DEFAULT '',
+  updated_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS service_entries (
+  id VARCHAR(36) PRIMARY KEY,
+  entry_date DATE NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  mileage DOUBLE NULL,
+  cost DOUBLE NULL,
+  notes TEXT NOT NULL DEFAULT '',
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS places (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  rating INT NULL,
+  notes TEXT NOT NULL DEFAULT '',
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS emergency_contacts (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  phone VARCHAR(50) NOT NULL DEFAULT '',
+  category VARCHAR(100) NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS fuel_entries (
+  id VARCHAR(36) PRIMARY KEY,
+  entry_date DATE NOT NULL,
+  mileage DOUBLE NOT NULL,
+  liters DOUBLE NOT NULL,
+  cost DOUBLE NULL,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -1,4 +1,18 @@
-import type { Checklist, ChecklistKind, InventoryItem, LogEntry, Location, Recipe, Trip } from './types'
+import type {
+  Checklist,
+  ChecklistKind,
+  EmergencyContact,
+  FuelEntry,
+  InventoryItem,
+  LogEntry,
+  Location,
+  Place,
+  Recipe,
+  ServiceEntry,
+  Stats,
+  Trip,
+  VehicleData,
+} from './types'
 
 export interface TripSummary {
   id: string
@@ -86,6 +100,8 @@ export const inventoryApi = {
   update: (id: string, patch: Partial<Pick<InventoryItem, 'name' | 'amount' | 'unit'>>) =>
     request<InventoryItem>(`/api/inventory/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   remove: (id: string) => request<void>(`/api/inventory/${id}`, { method: 'DELETE' }),
+  move: (items: { name: string; unit: string; amount: number }[], from: Location, to: Location) =>
+    request<void>('/api/inventory/move', { method: 'POST', body: JSON.stringify({ items, from, to }) }),
 }
 
 // --- Trips ---
@@ -137,4 +153,62 @@ export const logbookApi = {
 // --- Public share ---
 export const publicApi = {
   logbook: (token: string) => request<LogEntry[]>(`/api/public/logbook/${encodeURIComponent(token)}`),
+}
+
+// --- Vehicle data (Husbilsdata) ---
+export type VehicleDataInput = Omit<VehicleData, 'updatedAt'>
+
+export const vehicleApi = {
+  get: () => request<VehicleData>('/api/vehicle'),
+  update: (data: VehicleDataInput) => request<VehicleData>('/api/vehicle', { method: 'PUT', body: JSON.stringify(data) }),
+}
+
+// --- Service log ---
+export type ServiceEntryInput = Pick<ServiceEntry, 'date' | 'title' | 'mileage' | 'cost' | 'notes'>
+
+export const serviceApi = {
+  list: () => request<ServiceEntry[]>('/api/service'),
+  create: (data: ServiceEntryInput) => request<ServiceEntry>('/api/service', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<ServiceEntryInput>) =>
+    request<ServiceEntry>(`/api/service/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: (id: string) => request<void>(`/api/service/${id}`, { method: 'DELETE' }),
+}
+
+// --- Places (Platser/ställplatser) ---
+export type PlaceInput = Pick<Place, 'name' | 'description' | 'rating' | 'notes'>
+
+export const placesApi = {
+  list: () => request<Place[]>('/api/places'),
+  create: (data: PlaceInput) => request<Place>('/api/places', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<PlaceInput>) =>
+    request<Place>(`/api/places/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: (id: string) => request<void>(`/api/places/${id}`, { method: 'DELETE' }),
+}
+
+// --- Emergency contacts (Nödkontakter) ---
+export type EmergencyContactInput = Pick<EmergencyContact, 'name' | 'phone' | 'category' | 'notes'>
+
+export const contactsApi = {
+  list: () => request<EmergencyContact[]>('/api/emergency-contacts'),
+  create: (data: EmergencyContactInput) =>
+    request<EmergencyContact>('/api/emergency-contacts', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<EmergencyContactInput>) =>
+    request<EmergencyContact>(`/api/emergency-contacts/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: (id: string) => request<void>(`/api/emergency-contacts/${id}`, { method: 'DELETE' }),
+}
+
+// --- Fuel log (Bränslelogg) ---
+export type FuelEntryInput = Pick<FuelEntry, 'date' | 'mileage' | 'liters' | 'cost'>
+
+export const fuelApi = {
+  list: () => request<FuelEntry[]>('/api/fuel'),
+  create: (data: FuelEntryInput) => request<FuelEntry>('/api/fuel', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<FuelEntryInput>) =>
+    request<FuelEntry>(`/api/fuel/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: (id: string) => request<void>(`/api/fuel/${id}`, { method: 'DELETE' }),
+}
+
+// --- Statistik ---
+export const statsApi = {
+  get: () => request<Stats>('/api/stats'),
 }
